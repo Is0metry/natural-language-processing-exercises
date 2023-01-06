@@ -63,5 +63,23 @@ def get_date(date_str:str)->str:
     ret_str += ' ' + months[int(m.group('month'))-1]
     return ret_str + ' 20' + m.group('year')
 
-def parse_request(req:str):
-    request_type = r'^(GET|POST)'
+def parse_request(reqs:pd.Series)->pd.DataFrame:
+    request_regex = r'''
+    (?P<method>^.*?)
+    \s+
+    (?P<path>.*?)
+    \s+
+    \[(?P<timestamp>.*?)\]
+    \s+
+    (?P<http_version>.*?)
+    \s+
+    \{(?P<status>\d+0)\}
+    \s+
+    (?P<bytes>\d+)
+    \s+
+    "(?P<user_agent>.*)"
+    \s+
+    (?P<ip>.*)$
+    '''
+    return reqs.str.extract(request_regex,flags=re.VERBOSE)
+    
