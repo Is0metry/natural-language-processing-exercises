@@ -2,7 +2,10 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from typing import List, Dict
+from os.path import isfile
 
+CODEUP_BLOG_CSV = 'data/codeup_blog.csv'
+INSHORT_CSV = 'data/inshort_articles.csv'
 
 def get_blog_articles() -> List[Dict[str, str]]:
     url = 'https://codeup.com/blog/'
@@ -15,7 +18,7 @@ def get_blog_articles() -> List[Dict[str, str]]:
         soup = BeautifulSoup(requests.get(
             url + e, headers=headers).text, 'html.parser')
         article['title'] = soup.title.get_text()
-        article['content'] = soup.find('div', id='main-content').get_text()
+        article['content'] = soup.find('div', class_='entry-content').get_text()
         articles.append(article)
     return articles
 
@@ -45,3 +48,20 @@ def get_news_articles()->List[Dict[str,str]]:
     for c in categories:
         ret_lst += get_articles(url,'/en/read/' + c,c)
     return ret_lst
+
+def get_blog_df()->pd.DataFrame:
+    if isfile(CODEUP_BLOG_CSV):
+        return pd.read_csv(CODEUP_BLOG_CSV,index_col=0)
+    lst = get_blog_articles()
+    ret_df = pd.DataFrame(lst)
+    ret_df.to_csv(CODEUP_BLOG_CSV)
+    return ret_df
+
+def get_article_df()->pd.DataFrame:
+    if isfile(INSHORT_CSV):
+        return pd.read_csv(INSHORT_CSV,index_col=0)
+    lst = get_news_articles()
+    ret_df = pd.DataFrame(lst) 
+    ret_df.to_csv(INSHORT_CSV)
+    return ret_df
+    
