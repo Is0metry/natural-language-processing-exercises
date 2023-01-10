@@ -10,6 +10,7 @@ from nltk.corpus import stopwords as stpwrds
 
 stopwords = stpwrds.words('english')
 
+
 def basic_clean(string: str) -> str:
     # TODO Docstring
     string = string.lower()
@@ -42,7 +43,7 @@ def lemmatize(tokens: str) -> str:
 def remove_stopwords(tokens: str,
                      extra_words: List[str] = [],
                      exclude_words: List[str] = []) -> str:
-    #TODO Docstring
+    # TODO Docstring
     tokens = [t for t in tokens.split()]
     for exc in exclude_words:
         stopwords.remove(exc)
@@ -51,7 +52,18 @@ def remove_stopwords(tokens: str,
     stopped = [t for t in tokens if t not in stopwords]
     return ' '.join(stopped)
 
-def squeaky_clean(string:str, extra_words:List[str] = [], exclude_words: List[str] = [])->str:
+
+def squeaky_clean(string: str, extra_words: List[str] = [], exclude_words: List[str] = []) -> str:
     string = basic_clean(string)
     string = tokenize(string)
-    return remove_stopwords(string,extra_words,exclude_words)
+    return remove_stopwords(string, extra_words, exclude_words)
+
+
+def prep_df_for_nlp(df: pd.DataFrame, ser: str,
+                    extra_words: List[str] = [],
+                    exclude_words: List[str] = []) -> pd.DataFrame:
+    df['clean'] = df[ser].apply(
+        squeaky_clean, exclude_words=exclude_words, extra_words=extra_words)
+    df['stem'] = df['clean'].apply(stem)
+    df['lemmatized'] = df['clean'].apply(lemmatize)
+    return df
